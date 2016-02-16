@@ -1,0 +1,36 @@
+# {{ ansible_managed }}
+# Manual customization of this file is not recommended.
+server {
+  listen {{ item.port }};
+  server_name {{ item.name }};
+{% if item.path is defined %}  root {{ item.path }};{% endif %}
+
+{% if item.gzip is defined and item.gzip %}
+  gzip on;
+  gzip_disable "msie6";
+  gzip_types text/html text/plain text/css application/json application/x-javascript text/xml application/xml application/xhtml+xml application/xml+rss text/javascript application/javascript;
+{% endif %}
+
+{% if item.options is defined %}
+{% for option in item.options %}
+  {{ option.key }} {{ option.value }};
+{% endfor %}
+{% endif %}
+
+{% if item.locations is defined %}{% for location in item.locations %}
+  location {{ location.path }} {
+{% if location.proxy is defined and location.proxy %}
+    proxy_pass {{ location.proxy_pass }};
+    proxy_http_version {{ location.proxy_http_version | default("1.1") }};
+{% else %}
+    try_files {{ location.try_files }};
+{% if location.options is defined %}
+{% for option in location.options %}
+    {{ option.key }} {{ option.value }};
+{% endfor %}
+{% endif %}
+{% endif %}
+  }
+
+{% endfor %}{% endif %}
+}

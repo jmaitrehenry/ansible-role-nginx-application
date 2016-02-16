@@ -1,0 +1,12 @@
+---
+- name: Add applications
+  template: src=nginx.conf.j2 dest=/etc/nginx/conf.d/{{item.name}}.conf
+  with_items: nginx_applications
+  when: (item.deleted is not defined or item.deleted == false)
+  notify: restart nginx
+
+- name: Remove application
+  file: path=/etc/nginx/conf.d/{{item.name}}.conf state=absent
+  with_items: nginx_applications
+  when: (item.deleted is defined and item.deleted == true)
+  notify: restart nginx
